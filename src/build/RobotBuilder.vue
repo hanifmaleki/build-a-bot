@@ -74,6 +74,14 @@ import CollapsableSection from '../shared/CollapsableSection.vue';
 
 export default {
 	name: 'RobotBuilder',
+	beforeRouteLeave(to, from, next) {
+		if(this.addedTiCart) {
+			next(true);
+		} else {
+			const response = confirm('You have not added your robot to your cart, are you sure you want to leave?');
+			next(response);
+		}
+	},
 	components: { PartSelector, CollapsableSection },
 	data() {
 		return {
@@ -107,6 +115,7 @@ export default {
 			const cost = robot.head.cost + robot.leftArm.cost + robot.torso.cost
 				+ robot.rightArm.cost + robot.base.cost;
 			this.cart.push({ ...robot, cost });
+			this.addToCart = true;
 		},
 
 	},
