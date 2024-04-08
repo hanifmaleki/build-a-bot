@@ -13,6 +13,7 @@ import RobotBuilder from '../build/RobotBuilder.vue';
 import HomePage from '../home/HomePage.vue';
 import SidebarStandard from '@/sidebar/SidebarStandard.vue';
 import SidebarBuilder from '@/sidebar/SidebarBuilder.vue';
+import ShoppingCart from '@/cart/ShoppingCart.vue';
 
 export default createRouter({
     history: createWebHistory(),
@@ -40,6 +41,10 @@ export default createRouter({
             const isValid = Number.isInteger(Number(to.params.id));
             next(isValid);
         },
+    }, {
+        path: '/cart',
+        name: 'Cart',
+        component: ShoppingCart,
     }, {
         path: '/parts/browse',
         name: 'BrowseParts',

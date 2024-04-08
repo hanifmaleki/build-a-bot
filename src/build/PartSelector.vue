@@ -53,7 +53,7 @@ export default {
         params: {
           id: this.selectedPart.id,
           partType: this.selectedPart.type,
-        }
+        },
       });
     },
     emitSelectedPart() {

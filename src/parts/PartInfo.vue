@@ -11,7 +11,6 @@
 </template>
 
 <script>
-import parts from '../data/parts';
 export default {
     name: 'PartInfo',
     props: {
@@ -28,7 +27,7 @@ export default {
     computed: {
         part() {
             const { partType, id } = this;
-            return parts[partType].find(part => part.id === +id);
+            return parts[partType].find((part) => part.id === +id);
         }
     },
 

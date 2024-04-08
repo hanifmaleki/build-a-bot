@@ -1,6 +1,6 @@
 <!-- eslint-disable no-tabs -->
 <template>
-	<div class="content">
+	<div v-if="availableParts" class="content">
 		<div class="part-info" id="partInfo">
 
 		</div>
@@ -16,66 +16,52 @@
 						<img :src="selectedRobot.torso.src" alt="" />
 						<img :src="selectedRobot.rightArm.src" class="rotate-right" alt="" />
 					</div>
-			<div class="bottom-row">
-				<img :src="selectedRobot.base.src" alt="" />
-			</div>
+					<div class="bottom-row">
+						<img :src="selectedRobot.base.src" alt="" />
+					</div>
+				</div>
+			</CollapsableSection>
+
+			<button class="add-to-cart" @click="addToCart()">Add to Cart</button>
 		</div>
-	</CollapsableSection>
 
-		<button class="add-to-cart" @click="addToCart()">Add to Cart</button>
-	</div>
-
-	<div class="top-row">
-		<!--div :class="[saleBorderClass, 'top', 'part']">
+		<div class="top-row">
+			<!--div :class="[saleBorderClass, 'top', 'part']">
 				<div class="robot-name">
 					{{ selectedRobot.head.title }}
 					<span v-if="selectedRobot.head.onSale" class="sale">Sale!</span>
 				</div-->
-		<PartSelector :parts="availableParts.heads" position="top" @partSelected="part => selectedRobot.head = part" />
-		<!--/div-->
-	</div>
-	<div class="middle-row">
-		<PartSelector :parts="availableParts.arms" position="left"
-			@partSelected="part => selectedRobot.leftArm = part" />
-		<PartSelector :parts="availableParts.torsos" position="center"
-			@partSelected="part => selectedRobot.torso = part" />
-		<PartSelector :parts="availableParts.arms" position="right"
-			@partSelected="part => selectedRobot.rightArm = part" />
-	</div>
-	<div class="bottom-row">
-		<PartSelector :parts="availableParts.bases" position="bottom"
-			@partSelected="part => selectedRobot.base = part" />
-	</div>
-	<div>
-		<h1>Cart</h1>
-		<table>
-			<thead>
-				<tr>
-					<th>Name</th>
-					<th class="cost">Cost</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr v-for="(robot, index) in cart" :key="index">
-					<td>{{ robot.head.title }}</td>
-					<td class="cost">{{ robot.cost }}</td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
+			<PartSelector :parts="availableParts.heads" position="top"
+				@partSelected="part => selectedRobot.head = part" />
+			<!--/div-->
+		</div>
+		<div class="middle-row">
+			<PartSelector :parts="availableParts.arms" position="left"
+				@partSelected="part => selectedRobot.leftArm = part" />
+			<PartSelector :parts="availableParts.torsos" position="center"
+				@partSelected="part => selectedRobot.torso = part" />
+			<PartSelector :parts="availableParts.arms" position="right"
+				@partSelected="part => selectedRobot.rightArm = part" />
+		</div>
+		<div class="bottom-row">
+			<PartSelector :parts="availableParts.bases" position="bottom"
+				@partSelected="part => selectedRobot.base = part" />
+		</div>
 	</div>
 </template>
 
 <script>
-import availableParts from '../data/parts';
 import createdHookMixin from './creted-hook.mixin';
 import PartSelector from './PartSelector.vue';
 import CollapsableSection from '../shared/CollapsableSection.vue';
 
 export default {
 	name: 'RobotBuilder',
+	created() {
+		this.$store.dispatch('robots/getParts');
+	},
 	beforeRouteLeave(to, from, next) {
-		if(this.addedTiCart) {
+		if (this.addedToCart) {
 			next(true);
 		} else {
 			const response = confirm('You have not added your robot to your cart, are you sure you want to leave?');
@@ -85,7 +71,6 @@ export default {
 	components: { PartSelector, CollapsableSection },
 	data() {
 		return {
-			availableParts,
 			cart: [],
 			selectedRobot: {
 				head: {},
@@ -98,6 +83,9 @@ export default {
 	},
 	mixins: [createdHookMixin],
 	computed: {
+		availableParts() {
+			return this.$store.state.robots.parts;
+		},
 		saleBorderClass() {
 			return this.selectedRobot.head.onSale ? 'sale-border' : '';
 		},
@@ -114,8 +102,9 @@ export default {
 			const robot = this.selectedRobot;
 			const cost = robot.head.cost + robot.leftArm.cost + robot.torso.cost
 				+ robot.rightArm.cost + robot.base.cost;
-			this.cart.push({ ...robot, cost });
-			this.addToCart = true;
+			this.$store.dispatch('robots/addRobotToCart', { ...robot, cost })
+				.then(() => this.$router.push('/cart'));
+			this.addedToCart = true;
 		},
 
 	},
@@ -251,17 +240,6 @@ export default {
 	padding: 3px;
 	font-size: 16px;
 
-}
-
-td,
-th {
-	text-align: left;
-	padding: 5px;
-	padding-right: 20px;
-}
-
-.cost {
-	text-align: right;
 }
 
 .sale-border {
